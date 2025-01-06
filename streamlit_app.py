@@ -72,16 +72,24 @@ else:
             generate images, generate music, and write essays.
             
             You are able to use the following tools to help you answer the user's question:
-            - generate_image: Generate an image (create an expansive prompt based on the user's request)
-            - generate_music: Generate music (create an expansive prompt based on the user's request)
+            - generate_image: Generate an image (create an expansive prompt based on the user's request, only when the user is actively asking for it in the very last message)
+            - generate_music: Generate music (create an expansive prompt based on the user's request, only when the user is actively asking for it in the very last message)
             
             When asked to write an essay, write a well-structured essay with a clear thesis,
             supporting arguments, and a conclusion, on the requested topic.
             
             In ambiguous cases, ask the user for clarification.
+            
+            Note: The user may make many requests, for text or for media or for essays.
+            Only generate media if the user is actively asking for it.
+            
+            For example, if the user asked for an image, received the image, then said "nice",
+            there is no need to generate another image.
             """
             
         }
+        
+        print(f"messages: {st.session_state.messages}")
 
         # Generate a response using the OpenAI API.
         stream = client.chat.completions.create(
@@ -190,25 +198,30 @@ else:
                 for tool_call in accumulated_tool_calls:
                     try:
                         if tool_call["name"] == "generate_image":
+                            print(f"Generating image with prompt: {tool_call['arguments']['prompt']}")
                             result_bytes = generate_image(tool_call["arguments"]["prompt"])
                             
-                            try:
-                                message_placeholder.image(io.BytesIO(result_bytes))
-                            except Exception as e:
-                                print(f"Error displaying image: {str(e)}")
-                                print(f"Bytes: {result_bytes[0:200]}")
-                                st.error(f"Error displaying image: {str(e)}")
-
+                            # Store media first
                             st.session_state.media.append({"type": "image", "data": result_bytes})
+                            # Add a placeholder message for the assistant
+                            st.session_state.messages.append({"role": "assistant", "content": "Here is the image you requested:"})
+                            
+                            # No need to try displaying here since it will be shown in the message history
+                            enable_input()
+                            st.rerun()
+
                         elif tool_call["name"] == "generate_music":
+                            print(f"Generating music with prompt: {tool_call['arguments']['prompt']}")
                             result_bytes = generate_music(tool_call["arguments"]["prompt"])
                             
-                            try:
-                                message_placeholder.audio(result_bytes)
-                            except Exception as e:
-                                st.error(f"Error displaying audio: {str(e)}")
-
+                            # Store media first
                             st.session_state.media.append({"type": "audio", "data": result_bytes})
+                            # Add a placeholder message for the assistant
+                            st.session_state.messages.append({"role": "assistant", "content": "Here is the music you requested:"})
+                            
+                            enable_input()
+                            st.rerun()
+
                     except Exception as e:
                         st.error(f"Error executing tool call: {str(e)}")
                 
