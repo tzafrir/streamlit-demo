@@ -11,7 +11,7 @@ This is a demo of a chatbot that supports:
 * [OpenAI](https://openai.com) - for text generation
 * [Hugging Face](https://huggingface.co) - for image and music generation
 * [ElevenLabs](https://elevenlabs.io) - for text-to-speech generation
-* [Brave](https://brave.com) - for web search
+* [Brave](https://brave.com/search/api/) - for web search
 * [Supabase](https://supabase.com) - for storing and querying usage data
 
 ### Cost Tracking
@@ -92,3 +92,40 @@ This is a demo of a chatbot that supports:
    ```
 
 2. Open http://localhost:8501 in your browser
+
+
+## Design Decisions
+
+* Main LLM engine is OpenAI's GPT-4o, where I make use of advanced features:
+  * Tool calling for triggering image/audio/research generation based on user query in natural language
+  * Streaming responses for a more interactive experience
+  * Usage tracking for cost tracking
+  * Integration using the `openai` python package
+
+* I chose Huggingface as an engine for running open source models, only because it was the easiest to create a separate account using the provided funds
+  * Generally I prefer replicate.com
+  * Huggingface is often slow arbitrarily, and that causes higher wait times than I am usually comfortable delivering
+  * Integration is a simple POST request to the API
+
+* Image generation:
+  * I chose flux-schnell for image generation, because of its speed and quality, to compensate for the wait times of huggingface
+
+* Song generation:
+  * Optimally I would use a song generation AI such as Suno v4, but it does not have an official API
+  * Instead, I am constructing a song "creatively" by overlaying generated music with a text-to-speech of the lyrics
+  * Consider this a POC work in progress
+  * The model intelligently decides if the user asked for a song with lyrics, and is also capable of generating music without lyrics
+  * Audio processing:
+    * The text-to-speech output is reduced in volume, and a second of silence is added to the beginning for better musicality
+    * The music and speech are mixed together, and the output is served to the user
+    * The spoken lyrics are cut off at the end of the generated music
+
+* Text to Speech:
+  * ElevenLabs is used for text-to-speech generation, with a generous free tier and high quality output
+  * Integration is using the `elevenlabs` python package
+
+* Research paper generation:
+  * I am using Brave's search engine to get real-world information to base the research paper on
+    * Implementation is a simple GET request to the API
+  * The research paper is generated in markdown format, and is formatted with proper citations and sections
+  * The research paper is generated in a streaming fashion, and the user can see the progress as it is generated
