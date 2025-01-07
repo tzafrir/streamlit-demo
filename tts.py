@@ -13,7 +13,7 @@ def mix_audio(music_bytes, audio_bytes):
     audio = AudioSegment.from_file(audio_io)
     
     # Reduce the volume of the audio
-    audio = audio - 16
+    audio = audio - 10
 
     # Add 2 seconds of silence at the beginning
     audio = AudioSegment.silent(duration=1000) + audio
