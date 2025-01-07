@@ -96,6 +96,9 @@ This is a demo of a chatbot that supports:
 
 ## Design Decisions
 
+* The app is powered by Streamlit, which makes it very easy to quickly build a streaming chatbot app, and supports images and audio natively
+  * This also made it very easy to deploy for free on Streamlit's free tier
+
 * Main LLM engine is OpenAI's GPT-4o, where I make use of advanced features:
   * Tool calling for triggering image/audio/research generation based on user query in natural language
   * Streaming responses for a more interactive experience
