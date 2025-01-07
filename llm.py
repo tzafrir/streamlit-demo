@@ -158,6 +158,7 @@ def get_chat_completion(messages, stream=True):
         messages=[{"role": "system", "content": ASSISTANT_SYSTEM_PROMPT}] + messages,
         tools=TOOLS,
         stream=stream,
+        stream_options={"include_usage": True}
     )
 
 def get_research_completion(query, search_results, stream=True):
@@ -184,5 +185,6 @@ def get_research_completion(query, search_results, stream=True):
             {"role": "system", "content": system_message},
             {"role": "user", "content": f"Write a research paper about: {query}"}
         ],
-        stream=stream
+        stream=stream,
+        stream_options={"include_usage": True}
     ) 

@@ -106,6 +106,15 @@ else:
             stream = get_chat_completion(st.session_state.messages)
             
             for chunk in stream:
+                # Handle usage data in the last chunk
+                if hasattr(chunk, 'usage') and chunk.usage:
+                    # Token usage: CompletionUsage(completion_tokens=10, prompt_tokens=525, total_tokens=535, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=0, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=0), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0))
+                    pass
+
+                # Skip empty chunks
+                if not hasattr(chunk, 'choices') or not chunk.choices:
+                    continue
+                    
                 delta = chunk.choices[0].delta
                 
                 # Handle tool calls
@@ -198,7 +207,16 @@ else:
                             research_stream = get_research_completion(tool_call["arguments"]["query"], search_results)
                             
                             paper_content = ""
-                            for chunk in research_stream:
+                            for chunk in research_stream:                                    
+                                # Handle usage data in the last chunk
+                                if hasattr(chunk, 'usage') and chunk.usage:
+                                    # print(f"Research paper token usage: {chunk.usage}")
+                                    pass
+
+                                # Skip empty chunks
+                                if not hasattr(chunk, 'choices') or not chunk.choices:
+                                    continue
+                                    
                                 if chunk.choices[0].delta.content:
                                     paper_content += chunk.choices[0].delta.content
                                     message_placeholder.markdown(paper_content + "▌")
