@@ -16,7 +16,7 @@ def mix_audio(music_bytes, audio_bytes):
     audio = audio - 16
 
     # Add 2 seconds of silence at the beginning
-    audio = AudioSegment.silent(duration=2000) + audio
+    audio = AudioSegment.silent(duration=1000) + audio
     
     # Trim the audio to the length of the music
     audio = audio[:music.duration_seconds * 1000]
