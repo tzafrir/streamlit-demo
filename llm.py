@@ -1,26 +1,18 @@
 """
-Language Model Integration Module
+A module for interacting with OpenAI's GPT models.
 
-This module provides integration with OpenAI's GPT-4 model for various AI tasks including:
-- General conversation
-- Image generation prompting
-- Music generation prompting
-- Research paper generation
-
-The module defines system prompts and tools for specialized tasks, and provides
-functions to interact with the OpenAI API in a structured way.
+This module provides functionality to interact with OpenAI's GPT models,
+particularly GPT-4o, for chat completions with specialized tools.
 
 Required Environment Variables:
-    - OPENAI_API_KEY: API key for accessing OpenAI's API services
-
-Dependencies:
-    - openai: For interacting with OpenAI's API
+    - OPENAI_API_KEY: API key for accessing OpenAI API
 """
 
 from openai import OpenAI
 import os
+from supabase_client import track_token_usage
 
-# Initialize OpenAI client
+# Initialize the OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # System prompts
@@ -74,49 +66,49 @@ Write a clear, concise, and professional research paper that:
 
 Format the paper in markdown with proper headings and sections."""
 
-# Tool definitions
+# Available tools/functions for the model
 TOOLS = [
     {
         "type": "function",
         "function": {
             "name": "generate_image",
-            "description": "Generate an image",
+            "description": "Generate an image based on a text description",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "prompt": {
                         "type": "string",
-                        "description": "The description of the image to generate"
+                        "description": "The text description of the image to generate"
                     }
                 },
                 "required": ["prompt"]
             }
-        },
+        }
     },
     {
         "type": "function",
         "function": {
             "name": "generate_music",
-            "description": "Generate music",
+            "description": "Generate music based on a description, optionally with lyrics",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "prompt": {
                         "type": "string",
-                        "description": "The description of the music backing track to generate"
+                        "description": "Description of the music to generate"
                     },
                     "has_lyrics": {
                         "type": "boolean",
-                        "description": "Whether the music has lyrics"
+                        "description": "Whether to include lyrics in the music"
                     },
                     "lyrics": {
                         "type": "string",
-                        "description": "The pure lyrics of the song, without titles such as 'verse' or 'chorus' (empty string if no lyrics are requested)"
+                        "description": "The lyrics to be sung (required if has_lyrics is true)"
                     }
                 },
-                "required": ["prompt", "has_lyrics", "lyrics"]
+                "required": ["prompt", "has_lyrics"]
             }
-        },
+        }
     },
     {
         "type": "function",

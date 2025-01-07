@@ -21,10 +21,12 @@ Dependencies:
 """
 
 from dotenv import load_dotenv
+load_dotenv()
+
 from tts import text_to_speech_mixed
 from search import search_brave
 from llm import get_chat_completion, get_research_completion
-load_dotenv()
+from supabase_client import get_total_tokens, track_token_usage
 
 import streamlit as st
 import io
@@ -37,6 +39,31 @@ st.write(
     "Welcome to the chatbot! The assistant is able to answer any question,"
     " generate images, generate music, and write research papers!"
 )
+
+# Calculate costs from tokens
+def calculate_cost(prompt_tokens, completion_tokens):
+    # GPT-4o pricing: $2.5/1M prompt tokens, $10/1M completion tokens
+    prompt_cost = (prompt_tokens / 1000000) * 2.5
+    completion_cost = (completion_tokens / 1000000) * 10
+    return prompt_cost + completion_cost
+
+# Add usage stats in the sidebar
+with st.sidebar:
+    st.header("💰 Usage Stats")
+    
+    # Get total usage
+    prompt_tokens, completion_tokens = get_total_tokens()
+    total_tokens = prompt_tokens + completion_tokens
+    total_cost = calculate_cost(prompt_tokens, completion_tokens)
+    
+    # Display stats
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Total Cost", f"${total_cost:.2f}")
+        st.metric("Prompt Tokens", f"{prompt_tokens:,}")
+    with col2:
+        st.metric("Total Tokens", f"{total_tokens:,}")
+        st.metric("Completion Tokens", f"{completion_tokens:,}")
 
 # Get API key from environment variable
 openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -108,8 +135,11 @@ else:
             for chunk in stream:
                 # Handle usage data in the last chunk
                 if hasattr(chunk, 'usage') and chunk.usage:
-                    # Token usage: CompletionUsage(completion_tokens=10, prompt_tokens=525, total_tokens=535, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=0, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=0), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0))
-                    pass
+                    # Track token usage
+                    track_token_usage(
+                        chunk.usage.prompt_tokens,
+                        chunk.usage.completion_tokens
+                    )
 
                 # Skip empty chunks
                 if not hasattr(chunk, 'choices') or not chunk.choices:
@@ -210,8 +240,11 @@ else:
                             for chunk in research_stream:                                    
                                 # Handle usage data in the last chunk
                                 if hasattr(chunk, 'usage') and chunk.usage:
-                                    # print(f"Research paper token usage: {chunk.usage}")
-                                    pass
+                                    # Track token usage
+                                    track_token_usage(
+                                        chunk.usage.prompt_tokens,
+                                        chunk.usage.completion_tokens
+                                    )
 
                                 # Skip empty chunks
                                 if not hasattr(chunk, 'choices') or not chunk.choices:
