@@ -122,6 +122,7 @@ This is a demo of a chatbot that supports:
     * The text-to-speech output is reduced in volume, and a second of silence is added to the beginning for better musicality
     * The music and speech are mixed together, and the output is served to the user
     * The spoken lyrics are cut off at the end of the generated music
+   * Optimally I would generate the music and the TTS in parallel using async code, but I ran into issues combining async code with the Streamlit codeflow and chose to keep it simple for delivering on time
 
 * Text to Speech:
   * ElevenLabs is used for text-to-speech generation, with a generous free tier and high quality output
