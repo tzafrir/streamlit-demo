@@ -34,6 +34,28 @@ This is a demo of a chatbot that supports:
    - Copy and paste the contents of `create_table.sql` and run it
    - Go to Project Settings > API to get your project URL and anon key
 
+## Usage Examples
+
+1. General Questions:
+   - "What is the capital of France?"
+   - "What is the meaning of life?"
+   - "How to setup supabase in a python project?"
+
+2. Image Generation:
+   - "I want to see a sunset"
+   - "Generate an image of a dog"
+   - "Draw a painting of the moon"
+
+3. Music Generation:
+   - "Play a song about the ocean"
+   - "Create background music for a video about cats"
+   - "I want to hear a song about the meaning of life"
+
+4. Research Paper Generation:
+   - "Write a research paper on the history of democracy"
+   - "I need help writing a paper on the future of AI"
+   - "Create a research paper on NVIDIA's announcements from CES 2025"
+
 ## Environment Setup
 
 1. Copy `.env.example` to `.env`:
