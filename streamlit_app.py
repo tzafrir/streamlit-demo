@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+
+from tts import text_to_speech_mixed
 load_dotenv()
 
 import streamlit as st
@@ -18,6 +20,8 @@ st.write(
 openai_api_key = os.getenv("OPENAI_API_KEY")
 if not openai_api_key:
     st.error("Please set the OPENAI_API_KEY environment variable.", icon="🚨")
+elif not os.getenv("ELEVENLABS_API_KEY"):
+    st.error("Please set the ELEVENLABS_API_KEY environment variable.", icon="🚨")
 else:
 
     # Create an OpenAI client.
@@ -75,6 +79,17 @@ else:
             - generate_image: Generate an image (create an expansive prompt based on the user's request, only when the user is actively asking for it in the very last message)
             - generate_music: Generate music (create an expansive prompt based on the user's request, only when the user is actively asking for it in the very last message)
             
+            Music can be generated with or without lyrics. If the user is requesting for background music,
+            then the music should be generated without lyrics. If the user is requesting for a song,
+            then the music should be generated with lyrics. Use your best judgement to determine if the user is asking for a song or background music,
+            and ask the user for clarification if you are not sure.
+            
+            When the user asks you to create a song, it should be generated as music unless the user
+            explicitly asks for written lyrics or text output.
+            
+            When writing lyrics, write only words that should be pronounced out loud, and never write titles such as "chorus" or "verse".
+            It is forbidden to write "Chorus" as part of the lyrics.
+            
             When asked to write an essay, write a well-structured essay with a clear thesis,
             supporting arguments, and a conclusion, on the requested topic.
             
@@ -126,10 +141,18 @@ else:
                             "properties": {
                                 "prompt": {
                                     "type": "string",
-                                    "description": "The description of the music to generate"
+                                    "description": "The description of the music backing track to generate"
+                                },
+                                "has_lyrics": {
+                                    "type": "boolean",
+                                    "description": "Whether the music has lyrics"
+                                },
+                                "lyrics": {
+                                    "type": "string",
+                                    "description": "The pure lyrics of the song, without titles such as 'verse' or 'chorus' (empty string if no lyrics are requested)"
                                 }
                             },
-                            "required": ["prompt"]
+                            "required": ["prompt", "has_lyrics", "lyrics"]
                         }
                     },
                 },
@@ -211,8 +234,16 @@ else:
                             st.rerun()
 
                         elif tool_call["name"] == "generate_music":
-                            print(f"Generating music with prompt: {tool_call['arguments']['prompt']}")
+                            print(f"Generating music with arguments: {tool_call['arguments']}")
                             result_bytes = generate_music(tool_call["arguments"]["prompt"])
+                            if tool_call["arguments"]["has_lyrics"]:
+                                lyrics = tool_call["arguments"]["lyrics"]
+                                prev_result_bytes = result_bytes
+                                try:
+                                    result_bytes = text_to_speech_mixed(lyrics, result_bytes)
+                                except Exception as e:
+                                    st.error(f"Error generating music with lyrics: {str(e)}")
+                                    result_bytes = prev_result_bytes
                             
                             # Store media first
                             st.session_state.media.append({"type": "audio", "data": result_bytes})
