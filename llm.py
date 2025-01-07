@@ -1,3 +1,22 @@
+"""
+Language Model Integration Module
+
+This module provides integration with OpenAI's GPT-4 model for various AI tasks including:
+- General conversation
+- Image generation prompting
+- Music generation prompting
+- Research paper generation
+
+The module defines system prompts and tools for specialized tasks, and provides
+functions to interact with the OpenAI API in a structured way.
+
+Required Environment Variables:
+    - OPENAI_API_KEY: API key for accessing OpenAI's API services
+
+Dependencies:
+    - openai: For interacting with OpenAI's API
+"""
+
 from openai import OpenAI
 import os
 
@@ -119,7 +138,21 @@ TOOLS = [
 ]
 
 def get_chat_completion(messages, stream=True):
-    """Get chat completion from OpenAI API"""
+    """
+    Get a chat completion from OpenAI's GPT-4o model with tool calling capabilities.
+    
+    Args:
+        messages (list): List of message dictionaries containing role and content
+        stream (bool, optional): Whether to stream the response. Defaults to True
+        
+    Returns:
+        openai.Stream or openai.ChatCompletion: The model's response, either as a
+        stream or complete response depending on the stream parameter
+        
+    Note:
+        The function includes specialized tools for generating images, music,
+        and research papers through function calling.
+    """
     return client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "system", "content": ASSISTANT_SYSTEM_PROMPT}] + messages,
@@ -128,7 +161,22 @@ def get_chat_completion(messages, stream=True):
     )
 
 def get_research_completion(query, search_results, stream=True):
-    """Get research paper completion from OpenAI API"""
+    """
+    Generate a research paper using GPT-4o based on a query and search results.
+    
+    Args:
+        query (str): The research topic or question to investigate
+        search_results (str): Web search results to use as context
+        stream (bool, optional): Whether to stream the response. Defaults to True
+        
+    Returns:
+        openai.Stream or openai.ChatCompletion: The generated research paper,
+        either as a stream or complete response
+        
+    Note:
+        The generated paper follows academic standards with proper sections,
+        citations, and formatting in markdown.
+    """
     system_message = RESEARCH_SYSTEM_PROMPT.format(search_results=search_results)
     return client.chat.completions.create(
         model="gpt-4o",
